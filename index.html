@@ -86,7 +86,18 @@ const songs=[
 ];
 const artists=["Bridge Music","Nation of Worship","Amit Kamble","Traditional Hymns","Hindi Worship","Marathi Worship"];
 let current=null, shift=0, font=19, autoTimer=null, favorites=JSON.parse(localStorage.getItem("cordcast-favs")||"[]"), submissions=JSON.parse(localStorage.getItem("cordcast-submissions")||"[]"), mode="simple", editorLines=[];
-function showPage(id){document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(id==="favorites")renderFavorites();if(id==="admin")renderAdmin();if(id==="songs")renderSongs()}
+function showPage(id){// Stop auto-scroll when leaving the song page
+if (pageId !== "songDetail") {
+    if (typeof autoScrollInterval !== "undefined" && autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
+    }
+
+    const autoScrollBtn = document.getElementById("autoScrollBtn");
+    if (autoScrollBtn) {
+        autoScrollBtn.textContent = "Auto Scroll";
+    }
+}document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(id==="favorites")renderFavorites();if(id==="admin")renderAdmin();if(id==="songs")renderSongs()}
 function card(s){return `<article class="song-card" onclick="openSong(${s.id})"><div class="cover">♫</div><h3>${esc(s.title)}</h3><div class="meta">${esc(s.artist)} · ${esc(s.language)}</div><span class="tag">Key ${s.key}</span></article>`}
 function esc(x){return String(x||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderHome(){document.getElementById("featured").innerHTML=songs.slice(0,3).map(card).join("");document.getElementById("artistCards").innerHTML=artists.slice(0,3).map(a=>`<article class="song-card" onclick="artistSearch('${a.replace(/'/g,"\\'")}')"><div class="cover">♬</div><h3>${esc(a)}</h3><div class="meta">Browse songs and collection</div></article>`).join("");document.getElementById("allArtists").innerHTML=artists.map(a=>`<article class="song-card" onclick="artistSearch('${a.replace(/'/g,"\\'")}')"><div class="cover">♬</div><h3>${esc(a)}</h3><div class="meta">Artist collection</div></article>`).join("")}
