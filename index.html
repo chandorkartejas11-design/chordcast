@@ -17,7 +17,11 @@ footer{border-top:1px solid var(--line);padding:25px 20px;text-align:center;colo
 @media(max-width:720px){.hero{grid-template-columns:1fr}.hero-art{min-height:140px}.grid{grid-template-columns:1fr 1fr}.nav{gap:8px;padding:12px}.brand{font-size:1.05rem}nav{order:3;flex-basis:100%}.nav{flex-wrap:wrap}.form-grid{grid-template-columns:1fr}}
 @media(max-width:480px){.grid{grid-template-columns:1fr}.search{flex-direction:column}.song-line{font-size:1.05rem}}
 </style>
-</head>
+<script>
+window.addEventListener("error", function(e){
+  console.error("Cordcast JavaScript error:", e.error || e.message);
+});
+</script>\n</head>
 <body>
 <header><div class="nav">
 <div class="brand">CORD<span>CAST</span></div>
@@ -61,7 +65,7 @@ footer{border-top:1px solid var(--line);padding:25px 20px;text-align:center;colo
 <section id="admin" class="page hidden"><div class="eyebrow">Prototype tools</div><h1>Submission review</h1><p>Local demo queue. A real admin login and secure database are required before launch.</p><div id="adminQueue"></div></section>
 </main><footer>Cordcast · Worship. Play. Sing. <br><span class="meta">Prototype preview · Songs and tools are illustrative.</span></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</script>
+<script>
 // Supabase client configuration. Replace both placeholders with values from Supabase → Project Settings → API.
 const SUPABASE_URL = "https://vkzrieiistrydvadrwol.supabase.co" ;
 const SUPABASE_ANON_KEY = "sb_publishable_9zdeGGbkRQzJtJu6zvmlfg_k0Xq1Kud";
@@ -91,34 +95,21 @@ function stopAutoScroll(){
     clearInterval(autoTimer);
     autoTimer=null;
   }
-
   const b=document.getElementById("scrollBtn");
-  if(b){
-    b.textContent="▶ Auto-scroll";
-  }
+  if(b) b.textContent="▶ Auto-scroll";
 }
 
 function showPage(id){
-  if(id!=="songDetail"){
-    stopAutoScroll();
-  }
-
-  document.querySelectorAll(".page").forEach(p=>{
-    p.classList.add("hidden");
-  });
-
-  document.getElementById(id).classList.remove("hidden");
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
-
+  if(id!=="songDetail") stopAutoScroll();
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  const page=document.getElementById(id);
+  if(!page) return;
+  page.classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"smooth"});
   if(id==="favorites") renderFavorites();
   if(id==="admin") renderAdmin();
   if(id==="songs") renderSongs();
 }
-}document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(id==="favorites")renderFavorites();if(id==="admin")renderAdmin();if(id==="songs")renderSongs()}
 function card(s){return `<article class="song-card" onclick="openSong(${s.id})"><div class="cover">♫</div><h3>${esc(s.title)}</h3><div class="meta">${esc(s.artist)} · ${esc(s.language)}</div><span class="tag">Key ${s.key}</span></article>`}
 function esc(x){return String(x||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function renderHome(){document.getElementById("featured").innerHTML=songs.slice(0,3).map(card).join("");document.getElementById("artistCards").innerHTML=artists.slice(0,3).map(a=>`<article class="song-card" onclick="artistSearch('${a.replace(/'/g,"\\'")}')"><div class="cover">♬</div><h3>${esc(a)}</h3><div class="meta">Browse songs and collection</div></article>`).join("");document.getElementById("allArtists").innerHTML=artists.map(a=>`<article class="song-card" onclick="artistSearch('${a.replace(/'/g,"\\'")}')"><div class="cover">♬</div><h3>${esc(a)}</h3><div class="meta">Artist collection</div></article>`).join("")}
@@ -137,17 +128,12 @@ function toggleFavorite(){if(!current)return;favorites=favorites.includes(curren
 function renderFavorites(){let list=songs.filter(s=>favorites.includes(s.id));document.getElementById("favoriteGrid").innerHTML=list.length?list.map(card).join(""):'<div class="empty">No favorites yet. Open a song and tap “Save favorite.”</div>'}
 function toggleScroll(){
   const b=document.getElementById("scrollBtn");
-
   if(autoTimer){
     stopAutoScroll();
     return;
   }
-
   b.textContent="Ⅱ Stop scroll";
-
-  autoTimer=setInterval(()=>{
-    window.scrollBy(0,1);
-  },35);
+  autoTimer=setInterval(()=>window.scrollBy(0,1),35);
 }
 function submissionMode(m){mode=m;document.getElementById("simpleFields").classList.toggle("hidden",m!=="simple");document.getElementById("editorFields").classList.toggle("hidden",m!=="editor");document.getElementById("subLyrics").required=m==="simple";document.getElementById("simpleTab").classList.toggle("active",m==="simple");document.getElementById("editorTab").classList.toggle("active",m==="editor")}
 function appendEditorLine(){let c=document.getElementById("chordLine").value.trim(),l=document.getElementById("lyricLine").value.trim();if(!l){alert("Enter a lyric line first.");return}editorLines.push({c,l});document.getElementById("editorPreview").innerHTML=editorLines.map(x=>`<div class="chords">${esc(x.c)}</div><div>${esc(x.l)}</div><br>`).join("");document.getElementById("chordLine").value="";document.getElementById("lyricLine").value=""}
