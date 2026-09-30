@@ -86,17 +86,37 @@ const songs=[
 ];
 const artists=["Bridge Music","Nation of Worship","Amit Kamble","Traditional Hymns","Hindi Worship","Marathi Worship"];
 let current=null, shift=0, font=19, autoTimer=null, favorites=JSON.parse(localStorage.getItem("cordcast-favs")||"[]"), submissions=JSON.parse(localStorage.getItem("cordcast-submissions")||"[]"), mode="simple", editorLines=[];
-function showPage(id){// Stop auto-scroll when leaving the song page
-if (id !== "songDetail") {
-    if (autoTimer) {
-        clearInterval(autoTimer);
-        autoTimer = null;
-    }
+function stopAutoScroll(){
+  if(autoTimer){
+    clearInterval(autoTimer);
+    autoTimer=null;
+  }
 
-    const autoScrollBtn = document.getElementById("autoScrollBtn");
-    if (autoScrollBtn) {
-        autoScrollBtn.textContent = "Auto Scroll";
-    }
+  const b=document.getElementById("scrollBtn");
+  if(b){
+    b.textContent="▶ Auto-scroll";
+  }
+}
+
+function showPage(id){
+  if(id!=="songDetail"){
+    stopAutoScroll();
+  }
+
+  document.querySelectorAll(".page").forEach(p=>{
+    p.classList.add("hidden");
+  });
+
+  document.getElementById(id).classList.remove("hidden");
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+  if(id==="favorites") renderFavorites();
+  if(id==="admin") renderAdmin();
+  if(id==="songs") renderSongs();
 }
 }document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"});if(id==="favorites")renderFavorites();if(id==="admin")renderAdmin();if(id==="songs")renderSongs()}
 function card(s){return `<article class="song-card" onclick="openSong(${s.id})"><div class="cover">♫</div><h3>${esc(s.title)}</h3><div class="meta">${esc(s.artist)} · ${esc(s.language)}</div><span class="tag">Key ${s.key}</span></article>`}
@@ -115,7 +135,20 @@ function renderChords(){if(!current)return;document.getElementById("keyTag").tex
 function changeFont(n){font=Math.max(14,Math.min(34,font+n*2));renderChords()}
 function toggleFavorite(){if(!current)return;favorites=favorites.includes(current.id)?favorites.filter(x=>x!==current.id):[...favorites,current.id];localStorage.setItem("cordcast-favs",JSON.stringify(favorites));renderChords()}
 function renderFavorites(){let list=songs.filter(s=>favorites.includes(s.id));document.getElementById("favoriteGrid").innerHTML=list.length?list.map(card).join(""):'<div class="empty">No favorites yet. Open a song and tap “Save favorite.”</div>'}
-function toggleScroll(){let b=document.getElementById("scrollBtn");if(autoTimer){clearInterval(autoTimer);autoTimer=null;b.textContent="▶ Auto-scroll";return}b.textContent="Ⅱ Stop scroll";autoTimer=setInterval(()=>window.scrollBy(0,1),35)}
+function toggleScroll(){
+  const b=document.getElementById("scrollBtn");
+
+  if(autoTimer){
+    stopAutoScroll();
+    return;
+  }
+
+  b.textContent="Ⅱ Stop scroll";
+
+  autoTimer=setInterval(()=>{
+    window.scrollBy(0,1);
+  },35);
+}
 function submissionMode(m){mode=m;document.getElementById("simpleFields").classList.toggle("hidden",m!=="simple");document.getElementById("editorFields").classList.toggle("hidden",m!=="editor");document.getElementById("subLyrics").required=m==="simple";document.getElementById("simpleTab").classList.toggle("active",m==="simple");document.getElementById("editorTab").classList.toggle("active",m==="editor")}
 function appendEditorLine(){let c=document.getElementById("chordLine").value.trim(),l=document.getElementById("lyricLine").value.trim();if(!l){alert("Enter a lyric line first.");return}editorLines.push({c,l});document.getElementById("editorPreview").innerHTML=editorLines.map(x=>`<div class="chords">${esc(x.c)}</div><div>${esc(x.l)}</div><br>`).join("");document.getElementById("chordLine").value="";document.getElementById("lyricLine").value=""}
 function submitSong(e){e.preventDefault();let body=mode==="simple"?document.getElementById("subLyrics").value:[...editorLines.map(x=>x.c+"\n"+x.l),document.getElementById("editorRaw").value].join("\n");let item={id:Date.now(),title:document.getElementById("subTitle").value,artist:document.getElementById("subArtist").value,language:document.getElementById("subLanguage").value,key:document.getElementById("subKey").value,lyrics:body,audio:document.getElementById("subAudio").value,source:document.getElementById("subSource").value,status:"Pending review"};submissions.unshift(item);localStorage.setItem("cordcast-submissions",JSON.stringify(submissions));document.getElementById("submitMessage").innerHTML='<div class="notice">Submitted for review! This demo stores the request locally in this browser.</div>';e.target.reset();editorLines=[];document.getElementById("editorPreview").textContent="Your formatted lines will appear here."}
